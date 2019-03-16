@@ -19,6 +19,7 @@ Options
     Common options of all options:
       -u / --user     : The user of the credential.
       -p / --password : The password of the credential.
+      -t / --timeout  : Set the network timeout. (second)
 
     Parameters of ""file"" options:
       -n / --name        : The name of the file to save local.
@@ -43,6 +44,7 @@ Options
 			string pwd = null;
 			string dstFileName = null;
 			bool? overwrite = null;
+			int? timeout = null;
 
 			uri = new Uri(args[0]);
 			try {
@@ -71,6 +73,11 @@ Options
 							if (overwrite == null) { overwrite = bool.Parse(args[++i]); }
 							else { PrintError(HelpStr); Environment.Exit(1); }
 							break;
+						case "-t":
+						case "--timeout":
+							if (timeout == null) { timeout = int.Parse(args[++i]) * 1000; }
+							else { PrintError(HelpStr); Environment.Exit(1); }
+							break;
 						case "-n":
 						case "--name":
 							if (dstFileName == null) { dstFileName = args[++i]; }
@@ -95,10 +102,12 @@ Options
 			Wget.ResultCode res = Wget.ResultCode.UNKNOWN;
 			Wget.InitSecurityProtocol();
 			if (function.Equals("file")) {
-				res = Wget.GetFile(uri, dstFileName, overwrite ?? true, credential, Console.Out, Console.Error);
+				res = Wget.GetFile(uri, dstFileName, overwrite ?? true, credential, 
+					timeout ?? (3 * 60 * 1000), Console.Out, Console.Error);
 			}
 			else if (function.Equals("string")) {
-				res = Wget.GetString(uri, credential, Console.Out, Console.Error);
+				res = Wget.GetString(uri, credential, 
+					timeout ?? (3 * 60 * 1000), Console.Out, Console.Error);
 			}
 			Wget.Release();
 
