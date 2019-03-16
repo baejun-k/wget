@@ -31,7 +31,7 @@ namespace wget {
 			ResultCode resCode = ResultCode.UNKNOWN;
 			credential = credential ?? CredentialCache.DefaultNetworkCredentials;
 
-			var web = new WebClient();
+			var web = new WebClientWithTimeOut(4 * 60 * 1000);
 			web.Credentials = credential;
 
 			web.DownloadProgressChanged += (s, e) => {
@@ -77,11 +77,11 @@ namespace wget {
 			string tmpFileName;
 			do {
 				tmpFileName = Path.Combine(
-					Path.GetDirectoryName(dstFileName??"./"),
+					Path.GetDirectoryName(dstFileName ?? "./"),
 					Path.GetRandomFileName() + ".wgettmp");
 			} while (File.Exists(tmpFileName));
 
-			var web = new WebClient();
+			var web = new WebClientWithTimeOut(4 * 60 * 1000);
 			web.Credentials = credential;
 
 			web.DownloadProgressChanged += (s, e) => {
@@ -131,7 +131,7 @@ namespace wget {
 						if (File.Exists(dstFileName)) { File.Delete(dstFileName); }
 						File.Move(tmpFileName, dstFileName);
 					}
-					catch(Exception exc) {
+					catch (Exception exc) {
 						resCode = ResultCode.ERROR;
 						errStream?.WriteLine(exc.StackTrace);
 						PrintExceptions(exc, errStream, 0);
@@ -166,4 +166,17 @@ namespace wget {
 		}
 	}
 
+	class WebClientWithTimeOut : WebClient {
+		public int TimeOutMilliseconds { get; set; }
+		public WebClientWithTimeOut(int timeoutMilli) {
+			TimeOutMilliseconds = timeoutMilli;
+		}
+
+		protected override WebRequest GetWebRequest(Uri address)
+		{
+			WebRequest w = base.GetWebRequest(address);
+			w.Timeout = TimeOutMilliseconds;
+			return w;
+		}
+	}
 }
