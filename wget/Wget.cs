@@ -66,7 +66,7 @@ namespace wget {
 			return resCode;
 		}
 
-		public static ResultCode GetFile(Uri uri, string dstFileName, bool overWrite = true,
+		public static ResultCode GetFile(Uri uri, string dstFileName,
 			NetworkCredential credential = null, int timeout = 4 * 60 * 1000,
 			TextWriter outStream = null, TextWriter errStream = null)
 		{
@@ -123,20 +123,14 @@ namespace wget {
 					}
 				}
 
-				if (!overWrite && File.Exists(dstFileName)) {
-					resCode = ResultCode.ERROR;
-					errStream?.WriteLine("exist");
+				try {
+					if (File.Exists(dstFileName)) { File.Delete(dstFileName); }
+					File.Move(tmpFileName, dstFileName);
 				}
-				else {
-					try {
-						if (File.Exists(dstFileName)) { File.Delete(dstFileName); }
-						File.Move(tmpFileName, dstFileName);
-					}
-					catch (Exception exc) {
-						resCode = ResultCode.ERROR;
-						errStream?.WriteLine(exc.StackTrace);
-						PrintExceptions(exc, errStream, 0);
-					}
+				catch (Exception exc) {
+					resCode = ResultCode.ERROR;
+					errStream?.WriteLine(exc.StackTrace);
+					PrintExceptions(exc, errStream, 0);
 				}
 			}
 

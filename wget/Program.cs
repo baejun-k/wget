@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 
 namespace wget {
@@ -6,26 +7,25 @@ namespace wget {
 		private static readonly string HelpStr =
 @"Usage
     wget.exe URL_ADDRESS [function] [options]
-	wget.exe file_url --overwrite false
+	wget.exe file_url -x -O ./newdir/downloadfile
 
 URL_ADDRESS
     The url address to request downloads.
 
 Function
-    file   : Download the file. (default)
-    string : Download the string.
+    string : Output as a string.
 
 Options
-    Common options of all options:
+    HTTP:
       -u / --user     : The user of the credential.
       -p / --password : The password of the credential.
-      -t / --timeout  : Set the network timeout. (second)
+      -T / --timeout  : set the read timeout to SECONDS.
 
-    Parameters of ""file"" options:
-      -n / --name        : The name of the file to save local.
-                           default value is the name provided by url.
-      -o / --overwrite   : Overwrite when a file with the same name exists.
-                           default value is true.
+    Dowload:
+      -O / --output-document   : write documents to FILE.
+      -x / --force-directories : force creation of directories.
+
+    -h / --help : print help.
 ";
 		
 		public static void PrintError(string msg) {
@@ -38,12 +38,12 @@ Options
 				Environment.Exit(1);
 			}
 
-			string function = null;
+			bool? printString = null;
 			Uri uri = null;
 			string user = null;
 			string pwd = null;
 			string dstFileName = null;
-			bool? overwrite = null;
+			bool? createDir = null;
 			int? timeout = null;
 
 			uri = new Uri(args[0]);
@@ -51,11 +51,7 @@ Options
 				for (int i = 1; i < args.Length; i++) {
 					switch (args[i].ToLower()) {
 						case "string":
-							if (function == null) { function = "string"; }
-							else { PrintError(HelpStr); Environment.Exit(1); }
-							break;
-						case "file":
-							if (function == null) { function = "file"; }
+							if (printString == null) { printString = true; }
 							else { PrintError(HelpStr); Environment.Exit(1); }
 							break;
 						case "-u":
@@ -68,20 +64,27 @@ Options
 							if (pwd == null) { pwd = args[++i]; }
 							else { PrintError(HelpStr); Environment.Exit(1); }
 							break;
-						case "-o":
-						case "--overwrite":
-							if (overwrite == null) { overwrite = bool.Parse(args[++i]); }
-							else { PrintError(HelpStr); Environment.Exit(1); }
-							break;
-						case "-t":
+						case "-T":
 						case "--timeout":
 							if (timeout == null) { timeout = int.Parse(args[++i]) * 1000; }
 							else { PrintError(HelpStr); Environment.Exit(1); }
 							break;
-						case "-n":
-						case "--name":
+						case "-O":
+						case "--output-document":
 							if (dstFileName == null) { dstFileName = args[++i]; }
 							else { PrintError(HelpStr); Environment.Exit(1); }
+							break;
+						case "-x":
+						case "--force-directories":
+							if (createDir == null) { createDir = true; }
+							else { PrintError(HelpStr); Environment.Exit(1); }
+							break;
+						case "-h":
+						case "--help":
+							PrintError(HelpStr); Environment.Exit(0);
+							break;
+						default:
+							PrintError(HelpStr); Environment.Exit(1);
 							break;
 					}
 				}
@@ -91,8 +94,6 @@ Options
 				Environment.Exit(1);
 			}
 
-			function = function ?? "file";
-
 			NetworkCredential credential = new NetworkCredential()
 			{
 				UserName = user ?? CredentialCache.DefaultNetworkCredentials.UserName,
@@ -101,12 +102,16 @@ Options
 
 			Wget.ResultCode res = Wget.ResultCode.UNKNOWN;
 			Wget.InitSecurityProtocol();
-			if (function.Equals("file")) {
-				res = Wget.GetFile(uri, dstFileName, overwrite ?? true, credential, 
+			if (printString == true) {
+				res = Wget.GetString(uri, credential,
 					timeout ?? (3 * 60 * 1000), Console.Out, Console.Error);
 			}
-			else if (function.Equals("string")) {
-				res = Wget.GetString(uri, credential, 
+			else {
+				if (createDir == true && !string.IsNullOrEmpty(dstFileName)) {
+					string dir = Path.GetDirectoryName(dstFileName);
+					Directory.CreateDirectory(dir);
+				}
+				res = Wget.GetFile(uri, dstFileName, credential,
 					timeout ?? (3 * 60 * 1000), Console.Out, Console.Error);
 			}
 			Wget.Release();
