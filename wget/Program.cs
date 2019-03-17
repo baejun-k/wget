@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 
@@ -24,6 +25,7 @@ Options
     Dowload:
       -O / --output-document   : write documents to FILE.
       -x / --force-directories : force creation of directories.
+      -P / --directory-prefix   : save files to PREFIX/...
 
     -h / --help : print help.
 ";
@@ -43,13 +45,14 @@ Options
 			string user = null;
 			string pwd = null;
 			string dstFileName = null;
+			string prefixDirName = null;
 			bool? createDir = null;
 			int? timeout = null;
 
 			uri = new Uri(args[0]);
 			try {
 				for (int i = 1; i < args.Length; i++) {
-					switch (args[i].ToLower()) {
+					switch (args[i]) {
 						case "string":
 							if (printString == null) { printString = true; }
 							else { PrintError(HelpStr); Environment.Exit(1); }
@@ -77,6 +80,11 @@ Options
 						case "-x":
 						case "--force-directories":
 							if (createDir == null) { createDir = true; }
+							else { PrintError(HelpStr); Environment.Exit(1); }
+							break;
+						case "-P":
+						case "--directory-prefix":
+							if (prefixDirName == null) { prefixDirName = args[++i]; }
 							else { PrintError(HelpStr); Environment.Exit(1); }
 							break;
 						case "-h":
@@ -107,11 +115,31 @@ Options
 					timeout ?? (3 * 60 * 1000), Console.Out, Console.Error);
 			}
 			else {
-				if (createDir == true && !string.IsNullOrEmpty(dstFileName)) {
-					string dir = Path.GetDirectoryName(dstFileName);
+				if (prefixDirName == null) {
+					if (dstFileName == null) { prefixDirName = "./"; }
+					else { prefixDirName = Path.GetDirectoryName(dstFileName); }
+				}
+				else if (dstFileName != null) {
+					if (Path.IsPathRooted(dstFileName)) {
+						prefixDirName = Path.GetFullPath(prefixDirName);
+						dstFileName = Path.GetFullPath(dstFileName);
+						if (string.Compare(prefixDirName, 
+								dstFileName.Substring(0, prefixDirName.Length)) != 0)
+						{
+							PrintError("invalid path\n" + 
+								"\tprefix : " + prefixDirName + "\n" +
+								"\tdstfile: " + dstFileName);
+							Environment.Exit(2);
+						}
+					}
+					else { dstFileName = Path.Combine(prefixDirName, dstFileName); }
+				}
+
+				if (createDir == true) {
+					string dir = Path.GetDirectoryName(dstFileName ?? (prefixDirName + "/tmp"));
 					Directory.CreateDirectory(dir);
 				}
-				res = Wget.GetFile(uri, dstFileName, credential,
+				res = Wget.GetFile(uri, prefixDirName, dstFileName, credential,
 					timeout ?? (3 * 60 * 1000), Console.Out, Console.Error);
 			}
 			Wget.Release();

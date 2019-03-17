@@ -66,7 +66,7 @@ namespace wget {
 			return resCode;
 		}
 
-		public static ResultCode GetFile(Uri uri, string dstFileName,
+		public static ResultCode GetFile(Uri uri, string prefix, string dstFileName,
 			NetworkCredential credential = null, int timeout = 4 * 60 * 1000,
 			TextWriter outStream = null, TextWriter errStream = null)
 		{
@@ -78,8 +78,7 @@ namespace wget {
 			string tmpFileName;
 			do {
 				tmpFileName = Path.Combine(
-					Path.GetDirectoryName(dstFileName ?? "./"),
-					Path.GetRandomFileName() + ".wgettmp");
+					prefix, Path.GetRandomFileName() + ".wgettmp");
 			} while (File.Exists(tmpFileName));
 
 			var web = new WebClientWithTimeOut(timeout);
@@ -121,6 +120,7 @@ namespace wget {
 					else {
 						dstFileName = Path.GetFileName(uri.AbsolutePath);
 					}
+					dstFileName = Path.Combine(prefix, dstFileName);
 				}
 
 				try {
