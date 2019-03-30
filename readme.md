@@ -1,12 +1,12 @@
 # wget
 
 windows10의 경우 powershell에 있있으나 다른 버전에서 간단히 사용할 목적으로  
-wget의 기본 기능만 사용할 수 있도록 만듦.  
+wget의 ___기본 기능만___ 사용할 수 있도록 만듦.  
 
 멀티 프로세스 형태로 사용하려 만들었음.  
 
 ## 다운로드 진행 상태는 error stream으로 출력.  
-  _"downloading: BytesReceived TotalBytesToReceive"_ 형태로 출력 되며 TotalBytesToReceive이 *-1로 나오는 경우가 있음*
+  _"downloading: BytesReceived TotalBytesToReceive"_ 형태로 출력 되며 TotalBytesToReceive이 __-1로 나오는 경우가 있음__
   
   
 ## 기본적인 사용 방법.  
@@ -28,7 +28,8 @@ wget의 기본 기능만 사용할 수 있도록 만듦.
 * -x / --force-directories  : force creation of directories.  
 * -P / --directory-prefix   : save files to PREFIX/...  
 * -S / --string             : Output as a string.  
-### -h / --help : print help.  
+  
+* -h / --help : print help.  
   
   
 ## 프로스세 정상 종료 후 반환 코드.  
