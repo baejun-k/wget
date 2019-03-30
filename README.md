@@ -19,23 +19,23 @@ wget의 ___기본 기능만___ 사용할 수 있도록 만듦.
   
   
 ## Options  
-### HTTP:  
-* -u / --user     : The user of the credential.  
-* -p / --password : The password of the credential.  
-* -T / --timeout  : set the read timeout to SECONDS.  
-### Dowload:  
-* -O / --output-document    : write documents to FILE.  
-* -x / --force-directories  : force creation of directories.  
-* -P / --directory-prefix   : save files to PREFIX/...  
-* -S / --string             : Output as a string.  
+* HTTP:  
+  * -u / --user     : The user of the credential.  
+  * -p / --password : The password of the credential.  
+  * -T / --timeout  : set the read timeout to SECONDS.  
+* Dowload:  
+  * -O / --output-document    : write documents to FILE.  
+  * -x / --force-directories  : force creation of directories.  
+  * -P / --directory-prefix   : save files to PREFIX/...  
+  * -S / --string             : Output as a string.  
   
-* -h / --help : print help.  
+  * -h / --help : print help.  
   
   
 ## 프로스세 정상 종료 후 반환 코드.  
   UNKNOWN = -1, COMPLETED = 0, CANCELLED = 1, ERROR = 2 을 반환함.
-### Result Value  
-* UNKNOWN = -1,  
-* COMPLETED = 0,  
-* CANCELLED = 1,  
-* ERROR = 2
+* Result Value  
+  * UNKNOWN = -1,  
+  * COMPLETED = 0,  
+  * CANCELLED = 1,  
+  * ERROR = 2
