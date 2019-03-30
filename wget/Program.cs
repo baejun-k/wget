@@ -28,6 +28,11 @@ Options
       -P / --directory-prefix   : save files to PREFIX/...
 
     -h / --help : print help.
+Result Value
+    UNKNOWN = -1,
+    COMPLETED = 0,
+    CANCELLED = 1,
+    ERROR = 2
 ";
 		
 		public static void PrintError(string msg) {
@@ -111,40 +116,30 @@ Options
 			Wget.ResultCode res = Wget.ResultCode.UNKNOWN;
 			Wget.InitSecurityProtocol();
 			if (printString == true) {
-				res = Wget.GetString(uri, credential,
-					timeout ?? (3 * 60 * 1000), Console.Out, Console.Error);
+				res = Wget.GetString(uri, credential, timeout ?? (3 * 60 * 1000));
 			}
 			else {
 				if (prefixDirName == null) {
-					if (dstFileName == null) { prefixDirName = "./"; }
+					if (dstFileName == null) { prefixDirName = AppDomain.CurrentDomain.BaseDirectory; }
 					else { prefixDirName = Path.GetDirectoryName(dstFileName); }
 				}
 				else if (dstFileName != null) {
-					if (Path.IsPathRooted(dstFileName)) {
-						prefixDirName = Path.GetFullPath(prefixDirName);
-						dstFileName = Path.GetFullPath(dstFileName);
-						if (string.Compare(prefixDirName, 
-								dstFileName.Substring(0, prefixDirName.Length)) != 0)
-						{
-							PrintError("invalid path\n" + 
-								"\tprefix : " + prefixDirName + "\n" +
-								"\tdstfile: " + dstFileName);
-							Environment.Exit(2);
-						}
+					if (!Path.IsPathRooted(dstFileName)) {
+						dstFileName = Path.Combine(prefixDirName, dstFileName);
 					}
-					else { dstFileName = Path.Combine(prefixDirName, dstFileName); }
 				}
 
 				if (createDir == true) {
-					string dir = Path.GetDirectoryName(dstFileName ?? (prefixDirName + "/tmp"));
-					Directory.CreateDirectory(dir);
+					Directory.CreateDirectory(prefixDirName);
+					if (dstFileName != null) {
+						Directory.CreateDirectory(Path.GetDirectoryName(dstFileName));
+					}
 				}
-				res = Wget.GetFile(uri, prefixDirName, dstFileName, credential,
-					timeout ?? (3 * 60 * 1000), Console.Out, Console.Error);
+				res = Wget.GetFile(uri, prefixDirName, dstFileName, credential, timeout ?? (3 * 60 * 1000));
 			}
 			Wget.Release();
 
-			Environment.ExitCode = (int)res;
+			Environment.Exit((int)res);
 		}
 
 	}

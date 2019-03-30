@@ -24,8 +24,7 @@ namespace wget {
 		}
 
 		public static ResultCode GetString(Uri uri, NetworkCredential credential = null,
-			int timeout = 4 * 60 * 1000,
-			TextWriter outStream = null, TextWriter errStream = null)
+			int timeout = 4 * 60 * 1000)
 		{
 			Trace.Assert(uri != null);
 
@@ -37,28 +36,33 @@ namespace wget {
 
 			web.DownloadProgressChanged += (s, e) => {
 				if (e == null) { return; }
-				errStream?.WriteLine("downloading: " + e.BytesReceived + " " + e.TotalBytesToReceive);
+				Console.Error.WriteLine("downloading: " + e.BytesReceived + " " + e.TotalBytesToReceive);
+				Console.Error.Flush();
 			};
 			web.DownloadStringCompleted += (s, e) => {
 				if (e.Cancelled) {
 					resCode = ResultCode.CANCELLED;
-					errStream?.WriteLine("cancelled");
+					Console.Error.WriteLine("cancelled");
+					Console.Error.Flush();
 				}
 				else if (e.Error != null) {
 					resCode = ResultCode.ERROR;
-					errStream?.WriteLine(e.Error.Message);
-					errStream?.WriteLine(e.Error.StackTrace);
+					Console.Error.WriteLine(e.Error.Message);
+					Console.Error.WriteLine(e.Error.StackTrace);
+					Console.Error.Flush();
 				}
 				else {
 					resCode = ResultCode.COMPLETED;
-					outStream?.WriteLine(e.Result);
+					Console.Out.WriteLine(e.Result);
+					Console.Out.Flush();
 				}
 			};
 			try { web.DownloadStringTaskAsync(uri).Wait(); }
 			catch (Exception exc) {
 				resCode = ResultCode.ERROR;
-				errStream?.WriteLine(exc.StackTrace);
-				PrintExceptions(exc, errStream, 0);
+				Console.Out.WriteLine(exc.StackTrace);
+				Console.Out.Flush();
+				PrintExceptions(exc, 0);
 			}
 
 			web.Dispose();
@@ -67,8 +71,7 @@ namespace wget {
 		}
 
 		public static ResultCode GetFile(Uri uri, string prefix, string dstFileName,
-			NetworkCredential credential = null, int timeout = 4 * 60 * 1000,
-			TextWriter outStream = null, TextWriter errStream = null)
+			NetworkCredential credential = null, int timeout = 4 * 60 * 1000)
 		{
 			Trace.Assert(uri != null);
 
@@ -86,17 +89,20 @@ namespace wget {
 
 			web.DownloadProgressChanged += (s, e) => {
 				if (e == null) { return; }
-				errStream?.WriteLine("downloading: " + e.BytesReceived + " " + e.TotalBytesToReceive);
+				Console.Error.WriteLine("downloading: " + e.BytesReceived + " " + e.TotalBytesToReceive);
+				Console.Error.Flush();
 			};
 			web.DownloadFileCompleted += (s, e) => {
 				if (e.Cancelled) {
 					resCode = ResultCode.CANCELLED;
-					errStream?.WriteLine("cancelled");
+					Console.Error.WriteLine("cancelled");
+					Console.Error.Flush();
 				}
 				else if (e.Error != null) {
 					resCode = ResultCode.ERROR;
-					errStream?.WriteLine(e.Error.Message);
-					errStream?.WriteLine(e.Error.StackTrace);
+					Console.Error.WriteLine(e.Error.Message);
+					Console.Error.WriteLine(e.Error.StackTrace);
+					Console.Error.Flush();
 				}
 				else {
 					resCode = ResultCode.COMPLETED;
@@ -106,8 +112,9 @@ namespace wget {
 			try { web.DownloadFileTaskAsync(uri, tmpFileName).Wait(); }
 			catch (Exception exc) {
 				resCode = ResultCode.ERROR;
-				errStream?.WriteLine(exc.StackTrace);
-				PrintExceptions(exc, errStream, 0);
+				Console.Error.WriteLine(exc.StackTrace);
+				Console.Error.Flush();
+				PrintExceptions(exc, 0);
 			}
 
 			if (resCode == ResultCode.COMPLETED) {
@@ -129,8 +136,9 @@ namespace wget {
 				}
 				catch (Exception exc) {
 					resCode = ResultCode.ERROR;
-					errStream?.WriteLine(exc.StackTrace);
-					PrintExceptions(exc, errStream, 0);
+					Console.Error.WriteLine(exc.StackTrace);
+					Console.Error.Flush();
+					PrintExceptions(exc, 0);
 				}
 			}
 
@@ -139,19 +147,20 @@ namespace wget {
 				catch (Exception) { }
 			}
 
-			outStream?.WriteLine(resCode.ToString() + " " + dstFileName);
+			Console.Out.WriteLine(resCode.ToString() + " " + dstFileName);
+			Console.Out.Flush();
 
 			web.Dispose();
 
 			return resCode;
 		}
 
-		private static void PrintExceptions(Exception exc, TextWriter errStream, int level, int depth = -1)
+		private static void PrintExceptions(Exception exc, int level, int depth = -1)
 		{
-			errStream = errStream ?? Console.Error;
-			errStream.WriteLine(exc.Message);
+			Console.Out.WriteLine(exc.Message);
+			Console.Out.Flush();
 			if (exc.InnerException != null && (depth == -1 || level < depth)) {
-				PrintExceptions(exc.InnerException, errStream, level + 1, depth);
+				PrintExceptions(exc.InnerException, level + 1, depth);
 			}
 		}
 
