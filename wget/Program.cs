@@ -7,14 +7,11 @@ namespace wget {
 	class Program {
 		private static readonly string HelpStr =
 @"Usage
-    wget.exe URL_ADDRESS [function] [options]
+    wget.exe URL_ADDRESS [options]
 	wget.exe file_url -x -O ./newdir/downloadfile
 
 URL_ADDRESS
     The url address to request downloads.
-
-Function
-    string : Output as a string.
 
 Options
     HTTP:
@@ -23,9 +20,10 @@ Options
       -T / --timeout  : set the read timeout to SECONDS.
 
     Dowload:
-      -O / --output-document   : write documents to FILE.
-      -x / --force-directories : force creation of directories.
+      -O / --output-document    : write documents to FILE.
+      -x / --force-directories  : force creation of directories.
       -P / --directory-prefix   : save files to PREFIX/...
+      -S / --string             : Output as a string.
 
     -h / --help : print help.
 Result Value
@@ -58,7 +56,8 @@ Result Value
 			try {
 				for (int i = 1; i < args.Length; i++) {
 					switch (args[i]) {
-						case "string":
+						case "-S":
+						case "--string":
 							if (printString == null) { printString = true; }
 							else { PrintError(HelpStr); Environment.Exit(1); }
 							break;
