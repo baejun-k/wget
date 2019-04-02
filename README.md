@@ -1,6 +1,5 @@
 # wget  
-[ [repository](https://github.com/baejun-k/wget "wget") ]
-
+  
 windows10의 경우 powershell에 있있으나 다른 버전에서 간단히 사용할 목적으로  
 wget의 ___기본 기능만___ 사용할 수 있도록 만듦.  
 
